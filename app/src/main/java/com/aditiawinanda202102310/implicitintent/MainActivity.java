@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -12,6 +14,9 @@ import android.widget.Toast;
 
 import com.aditiawinanda202102310.implicitintent.databinding.ActivityMainBinding;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -96,5 +101,36 @@ public class MainActivity extends AppCompatActivity {
     public void tampilBluetooth(View view) {
         Intent bluetoothIntent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
         startActivity(bluetoothIntent);
+    }
+
+    public void tampilGdrive(View view) {
+        ArrayList<HashMap<String, Object>> items = new ArrayList<HashMap<String, Object>>();
+        final PackageManager pm = getPackageManager();
+
+        List<PackageInfo> packs = pm.getInstalledPackages(0);
+
+        for (PackageInfo pi : packs) {
+            String packageName = pi.packageName.toString();
+            String packageName_lowerCase = packageName.toLowerCase();
+
+            if (packageName_lowerCase.contains("com.google.android.apps.docs")) {
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                map.put("appName", pi.applicationInfo.loadLabel(pm));
+                map.put("packageName", pi.packageName);
+                items.add(map);
+            }
+        }
+        int item_size = items.size();
+
+        if (item_size >= 1) {
+            String packageName = (String) items.get(0).get("packageName");
+            Intent i = pm.getLaunchIntentForPackage(packageName);
+
+            if (i != null) {
+                startActivity(i);
+            } else {
+                Toast.makeText(getApplicationContext(), "Tidak ditemukan aplikasi kalkulator", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
